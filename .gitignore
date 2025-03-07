@@ -1,0 +1,53 @@
+# Python相关
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.env
+.venv
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# OCR项目特定输出
+ocr_results_*/
+
+# PDF文件（可选，如果不想包含测试用PDF）
+*.pdf
+
+# 敏感信息
+config.ini
+.env
+secrets.json
+*_key.txt
+
+# IDE相关
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+.ipynb_checkpoints
+
+# 日志
+*.log
+logs/
+
+# 临时文件
+tmp/
+temp/ 
