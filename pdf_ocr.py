@@ -69,7 +69,7 @@ def process_pdf(pdf_path: str, api_key: str) -> None:
 
 if __name__ == "__main__":
     # 使用示例
-    API_KEY = "your key"
-    PDF_PATH = "zh.pdf"
+    API_KEY = "lG9bSFCY0V5rUOU3mGEMKbeF4iMevoVm"
+    PDF_PATH = "/Users/joelgullo/Repositories/Test Generator_Experimental/memory-bank/exams.pdf"
     
     process_pdf(PDF_PATH, API_KEY)
