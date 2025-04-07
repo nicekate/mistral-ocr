@@ -48,6 +48,7 @@ def process_pdf(pdf_path: str, api_key: str) -> None:
     output_dir = f"ocr_results_{pdf_file.stem}"
     
     # 上传并处理PDF
+    print(f"正在上传文件: {pdf_file.name}...")
     uploaded_file = client.files.upload(
         file={
             "file_name": pdf_file.stem,
@@ -55,21 +56,26 @@ def process_pdf(pdf_path: str, api_key: str) -> None:
         },
         purpose="ocr",
     )
+    print(f"文件已上传成功，文件ID: {uploaded_file.id}")
     
+    print("正在获取签名URL...")
     signed_url = client.files.get_signed_url(file_id=uploaded_file.id, expiry=1)
+    
+    print("OCR处理中，请稍候...")
     pdf_response = client.ocr.process(
         document=DocumentURLChunk(document_url=signed_url.url), 
         model="mistral-ocr-latest", 
         include_image_base64=True
     )
     
+    print("OCR处理已完成，正在保存结果...")
     # 保存结果
     save_ocr_results(pdf_response, output_dir)
     print(f"OCR处理完成。结果保存在: {output_dir}")
 
 if __name__ == "__main__":
     # 使用示例
-    API_KEY = "your key"
-    PDF_PATH = "zh.pdf"
+    API_KEY  =  "你的密钥"
+    PDF_PATH  =  " zh.pdf "
     
     process_pdf(PDF_PATH, API_KEY)
