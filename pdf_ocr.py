@@ -75,7 +75,7 @@ def process_pdf(pdf_path: str, api_key: str) -> None:
 
 if __name__ == "__main__":
     # 使用示例
-    API_KEY = "ECdtDXGrtnY1EdX4BQqseLp1fJgnGJjM"
-    PDF_PATH = "/Users/sionwu/Documents/我的开发/mistral-ocr/超级不锈钢和高镍耐蚀合金_12962594_1-25.pdf"
+    API_KEY  =  "你的密钥"
+    PDF_PATH  =  " zh.pdf "
     
     process_pdf(PDF_PATH, API_KEY)
