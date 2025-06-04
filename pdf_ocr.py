@@ -6,6 +6,9 @@ import sys
 import argparse
 from mistralai import DocumentURLChunk
 from mistralai.models import OCRResponse
+
+class OCRProcessingError(Exception):
+    """Raised when an OCR processing step fails."""
 try:
     from mistralai.exceptions import MistralAPIException, MistralConnectionException, MistralException
 except ImportError:
@@ -75,31 +78,25 @@ def process_pdf(pdf_path: str, output_dir_arg: str = None) -> None:
             purpose="ocr",
         )
         print(f"文件已上传成功，文件ID: {uploaded_file.id}")
-    except FileNotFoundError: # Should be caught by pre-check, but good for robustness
-        print(f"错误: PDF文件 '{pdf_path}' 未找到。")
-        sys.exit(1)
+    except FileNotFoundError:
+        # Should be caught by the earlier check, but raise for safety
+        raise FileNotFoundError(f"PDF文件 '{pdf_path}' 未找到。")
     except (MistralAPIException, MistralConnectionException) as e:
-        print(f"错误: 上传PDF文件时发生API或连接错误: {e}")
-        sys.exit(1)
+        raise OCRProcessingError(f"上传PDF文件时发生API或连接错误: {e}") from e
     except MistralException as e:
-        print(f"错误: 上传PDF文件时发生Mistral相关错误: {e}")
-        sys.exit(1)
+        raise OCRProcessingError(f"上传PDF文件时发生Mistral相关错误: {e}") from e
     except Exception as e:
-        print(f"错误: 上传PDF文件时发生未知错误: {e}")
-        sys.exit(1)
+        raise OCRProcessingError(f"上传PDF文件时发生未知错误: {e}") from e
 
     print("正在获取签名URL...")
     try:
-        signed_url = client.files.get_signed_url(file_id=uploaded_file.id, expiry=60) # Increased expiry to 60 seconds
+        signed_url = client.files.get_signed_url(file_id=uploaded_file.id, expiry=60)  # Increased expiry to 60 seconds
     except (MistralAPIException, MistralConnectionException) as e:
-        print(f"错误: 获取签名URL时发生API或连接错误: {e}")
-        sys.exit(1)
+        raise OCRProcessingError(f"获取签名URL时发生API或连接错误: {e}") from e
     except MistralException as e:
-        print(f"错误: 获取签名URL时发生Mistral相关错误: {e}")
-        sys.exit(1)
+        raise OCRProcessingError(f"获取签名URL时发生Mistral相关错误: {e}") from e
     except Exception as e:
-        print(f"错误: 获取签名URL时发生未知错误: {e}")
-        sys.exit(1)
+        raise OCRProcessingError(f"获取签名URL时发生未知错误: {e}") from e
     
     print("OCR处理中，请稍候...")
     try:
@@ -109,14 +106,11 @@ def process_pdf(pdf_path: str, output_dir_arg: str = None) -> None:
             include_image_base64=True
         )
     except (MistralAPIException, MistralConnectionException) as e:
-        print(f"错误: OCR处理过程中发生API或连接错误: {e}")
-        sys.exit(1)
+        raise OCRProcessingError(f"OCR处理过程中发生API或连接错误: {e}") from e
     except MistralException as e:
-        print(f"错误: OCR处理过程中发生Mistral相关错误: {e}")
-        sys.exit(1)
+        raise OCRProcessingError(f"OCR处理过程中发生Mistral相关错误: {e}") from e
     except Exception as e:
-        print(f"错误: OCR处理过程中发生未知错误: {e}")
-        sys.exit(1)
+        raise OCRProcessingError(f"OCR处理过程中发生未知错误: {e}") from e
     
     print("OCR处理已完成，正在保存结果...")
     # 保存结果
@@ -137,16 +131,13 @@ def main():
 
     try:
         process_pdf(args.pdf_path, args.output_dir)
-    except FileNotFoundError as e:
-        # This primarily catches the FileNotFoundError from the pdf_file.is_file() check
-        # at the beginning of process_pdf if called directly or if argparse doesn't fully prevent it.
+    except (FileNotFoundError, ValueError, OCRProcessingError) as e:
         print(f"主程序错误: {e}")
         sys.exit(1)
-    except ValueError as e: # For API key not set (raised from process_pdf)
-        print(f"主程序错误: {e}")
+    except Exception as e:
+        print(f"主程序未知错误: {e}")
         sys.exit(1)
-    # Note: Specific API errors inside process_pdf already call sys.exit(1),
-    # so they won't typically propagate to be caught here.
 
 if __name__ == "__main__":
     main()
+

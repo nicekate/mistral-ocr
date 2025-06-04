@@ -6,7 +6,7 @@ from pathlib import Path
 from flask import Flask, request, render_template_string, send_file, after_this_request
 from werkzeug.utils import secure_filename
 
-from pdf_ocr import process_pdf
+from pdf_ocr import process_pdf, OCRProcessingError
 
 app = Flask(__name__)
 
@@ -49,8 +49,10 @@ def upload_and_ocr():
             try:
                 process_pdf(pdf_path, out_dir)
                 result_dirs.append(out_dir)
-            except Exception as e:
+            except (FileNotFoundError, ValueError, OCRProcessingError) as e:
                 errors.append(f"{filename}: {e}")
+            except Exception as e:
+                errors.append(f"{filename}: 未知错误 {e}")
 
         if not result_dirs:
             return {'errors': errors}, 400
