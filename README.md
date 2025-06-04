@@ -15,7 +15,7 @@
 运行此工具需要以下依赖项：
 
 ```bash
-pip install mistralai
+pip install mistralai flask
 ```
 
 ## 使用方法
@@ -42,6 +42,13 @@ pip install mistralai
         python pdf_ocr.py your_document.pdf -o custom_output_folder
         ```
         如果未提供输出目录，结果将保存在名为 `ocr_results_[PDF文件名]` 的文件夹中，该文件夹将在脚本运行的目录中创建。
+
+3.  **启动 Web UI**:
+    * 通过以下命令启动简易 Web 界面，可一次上传并处理多个 PDF 文件：
+        ```bash
+        python webui.py
+        ```
+    * 浏览器访问 `http://localhost:5000` 即可使用。上传的文件必须是 PDF，处理完成后会提供打包好的 ZIP 下载。
 
 ## 输出结果
 
