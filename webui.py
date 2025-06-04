@@ -10,14 +10,35 @@ from pdf_ocr import process_pdf, OCRProcessingError
 
 app = Flask(__name__)
 
-HTML_FORM = """
+HTML_TEMPLATE = """
 <!doctype html>
+<html lang=\"en\">
+<head>
+<meta charset=\"utf-8\">
 <title>Mistral OCR WebUI</title>
-<h1>Upload PDF files for OCR</h1>
-<form method=post enctype=multipart/form-data>
-  <input type=file name=files multiple>
-  <input type=submit value='Start OCR'>
-</form>
+<link href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css\" rel=\"stylesheet\">
+</head>
+<body class=\"bg-light\">
+<div class=\"container py-5\">
+  <h1 class=\"mb-4\">Mistral OCR WebUI</h1>
+  {% if errors %}
+    <div class=\"alert alert-danger\">
+      <ul class=\"mb-0\">
+      {% for err in errors %}
+        <li>{{ err }}</li>
+      {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+  <form method=\"post\" enctype=\"multipart/form-data\" class=\"mb-3\">
+    <div class=\"mb-3\">
+      <input type=\"file\" class=\"form-control\" name=\"files\" multiple required>
+    </div>
+    <button type=\"submit\" class=\"btn btn-primary\">Start OCR</button>
+  </form>
+</div>
+</body>
+</html>
 """
 
 @app.route('/', methods=['GET', 'POST'])
@@ -25,7 +46,7 @@ def upload_and_ocr():
     if request.method == 'POST':
         uploaded_files = request.files.getlist('files')
         if not uploaded_files:
-            return 'No files uploaded', 400
+            return render_template_string(HTML_TEMPLATE, errors=['No files uploaded']), 400
 
         work_dir = tempfile.mkdtemp(prefix='ocr_web_')
         result_dirs = []
@@ -55,7 +76,7 @@ def upload_and_ocr():
                 errors.append(f"{filename}: 未知错误 {e}")
 
         if not result_dirs:
-            return {'errors': errors}, 400
+            return render_template_string(HTML_TEMPLATE, errors=errors), 400
 
         zip_path = os.path.join(work_dir, 'results.zip')
         with zipfile.ZipFile(zip_path, 'w') as zipf:
@@ -67,7 +88,7 @@ def upload_and_ocr():
                         zipf.write(file_path, arcname)
 
         return send_file(zip_path, as_attachment=True)
-    return render_template_string(HTML_FORM)
+    return render_template_string(HTML_TEMPLATE)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
