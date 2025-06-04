@@ -90,7 +90,7 @@ def process_pdf(pdf_path: str, output_dir_arg: str = None) -> None:
 
     print("正在获取签名URL...")
     try:
-        signed_url = client.files.get_signed_url(file_id=uploaded_file.id, expiry=1)
+        signed_url = client.files.get_signed_url(file_id=uploaded_file.id, expiry=60) # Increased expiry to 60 seconds
     except (MistralAPIException, MistralConnectionException) as e:
         print(f"错误: 获取签名URL时发生API或连接错误: {e}")
         sys.exit(1)
