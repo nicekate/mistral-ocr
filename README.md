@@ -48,7 +48,7 @@ pip install mistralai flask
         ```bash
         python webui.py
         ```
-    * 浏览器访问 `http://localhost:5000` 即可使用。上传的文件必须是 PDF，处理完成后会提供打包好的 ZIP 下载。
+    * 浏览器访问 `http://localhost:8080` 即可使用。上传的文件必须是 PDF，处理完成后会提供打包好的 ZIP 下载。
     * 新版界面使用 Bootstrap 样式，美观且易用。
 
 ## 输出结果
