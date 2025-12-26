@@ -20,7 +20,7 @@ def replace_images_in_markdown(markdown_str: str, images_dict: dict) -> str:
         markdown_str = markdown_str.replace(f"![{img_name}]({img_name})", f"![{img_name}]({img_path})")
     return markdown_str
 
-def save_ocr_results(ocr_response: OCRResponse, output_dir: str) -> None:
+def save_ocr_results(ocr_response: OCRResponse, output_dir: str, pdf_name: str = None) -> None:
     # 创建输出目录
     os.makedirs(output_dir, exist_ok=True)
     images_dir = os.path.join(output_dir, "images")
@@ -41,8 +41,9 @@ def save_ocr_results(ocr_response: OCRResponse, output_dir: str) -> None:
         page_markdown = replace_images_in_markdown(page.markdown, page_images)
         all_markdowns.append(page_markdown)
     
-    # 保存完整markdown
-    with open(os.path.join(output_dir, "complete.md"), 'w', encoding='utf-8') as f:
+    # 保存完整markdown，使用PDF原始名称
+    md_filename = f"{pdf_name}.md" if pdf_name else "complete.md"
+    with open(os.path.join(output_dir, md_filename), 'w', encoding='utf-8') as f:
         f.write("\n\n".join(all_markdowns))
 
 def process_pdf(pdf_path: str, output_dir_arg: str = None) -> None:
@@ -113,8 +114,8 @@ def process_pdf(pdf_path: str, output_dir_arg: str = None) -> None:
         raise OCRProcessingError(f"OCR处理过程中发生未知错误: {e}") from e
     
     print("OCR处理已完成，正在保存结果...")
-    # 保存结果
-    save_ocr_results(pdf_response, output_dir)
+    # 保存结果，使用PDF文件名作为md文件名
+    save_ocr_results(pdf_response, output_dir, pdf_file.stem)
     print(f"OCR处理完成。结果保存在: {output_dir}")
 
 def main():
