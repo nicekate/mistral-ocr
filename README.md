@@ -2,11 +2,11 @@
 
 ![WebUI 预览](http://blog-bucket-20240321.oss-cn-hongkong.aliyuncs.com/blog/x9trs7.png)
 
-这个项目是一个简单但强大的工具，使用 **Mistral OCR 3**（最新版本）处理 PDF 文件。该工具能够从 PDF 文档中提取文本内容和图像，并将结果保存为 Markdown 格式。
+这个项目是一个简单但强大的工具，使用 `mistral-ocr-latest` 模型处理 PDF 文件（当前对应 **Mistral OCR 4**）。该工具能够从 PDF 文档中提取文本内容和图像，并将结果保存为 Markdown 格式。
 
 ## 功能特点
 
-- 🚀 使用最新的 **Mistral OCR 3** 模型，识别精度更高
+- 🚀 使用 `mistral-ocr-latest` 模型（当前对应 Mistral OCR 4）
 - 📄 自动提取文本内容并保留原始布局
 - 🖼️ 提取并保存 PDF 中的图像
 - 📝 生成以 PDF 原名命名的 Markdown 文件
@@ -20,11 +20,11 @@
 
 ## 安装要求
 
-运行此工具需要以下依赖项：
-
 ```bash
-pip install mistralai flask
+pip install "mistralai>=2" flask
 ```
+
+SDK 兼容 `mistralai` 1.x / 2.x，代码优先使用 2.x；若环境仅有 1.x 也可运行。
 
 ## 使用方法
 

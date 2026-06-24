@@ -1,19 +1,34 @@
-from mistralai import Mistral
 from pathlib import Path
 import os
 import base64
 import sys
 import argparse
-from mistralai import DocumentURLChunk
-from mistralai.models import OCRResponse
+
+# mistralai 2.x 优先，回退到 1.x
+try:
+    from mistralai.client import Mistral
+    from mistralai.client.models import DocumentURLChunk, OCRResponse
+    from mistralai.client.errors import SDKError, MistralError, NoResponseError
+
+    MistralAPIException = SDKError
+    MistralConnectionException = NoResponseError
+    MistralException = MistralError
+except ImportError:
+    from mistralai import Mistral, DocumentURLChunk
+    from mistralai.models import OCRResponse
+    try:
+        from mistralai.models.sdkerror import SDKError
+        from mistralai.models.mistralerror import MistralError
+
+        MistralAPIException = SDKError
+        MistralConnectionException = Exception
+        MistralException = MistralError
+    except ImportError:
+        MistralAPIException = MistralConnectionException = MistralException = Exception
+
 
 class OCRProcessingError(Exception):
     """Raised when an OCR processing step fails."""
-try:
-    from mistralai.exceptions import MistralAPIException, MistralConnectionException, MistralException
-except ImportError:
-    # Fallback if specific exceptions are not found
-    MistralAPIException = MistralConnectionException = MistralException = Exception
 
 def replace_images_in_markdown(markdown_str: str, images_dict: dict) -> str:
     for img_name, img_path in images_dict.items():

@@ -1,42 +1,34 @@
-# Python相关
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-env/
+.venv/
 venv/
+env/
 ENV/
-.env
-.venv
 build/
-develop-eggs/
 dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
 *.egg-info/
-.installed.cfg
 *.egg
 
-# OCR项目特定输出
-ocr_results_*/
-
-# PDF文件（可选，如果不想包含测试用PDF）
-*.pdf
-
-# 敏感信息
-config.ini
+# 环境与密钥
 .env
+.env.*
+config.ini
 secrets.json
 *_key.txt
 
-# IDE相关
+# OCR 输出
+ocr_results_*/
+ocr_web_*/
+*.zip
+
+# 测试文件
+*.pdf
+
+# IDE
 .idea/
 .vscode/
 *.swp
@@ -44,10 +36,8 @@ secrets.json
 .DS_Store
 .ipynb_checkpoints
 
-# 日志
+# 日志与临时文件
 *.log
 logs/
-
-# 临时文件
 tmp/
-temp/ 
+temp/
