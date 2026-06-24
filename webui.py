@@ -10,7 +10,7 @@ from concurrent.futures import ThreadPoolExecutor, Future
 from flask import Flask, request, render_template_string, send_file, Response, jsonify
 from werkzeug.utils import secure_filename
 
-from pdf_ocr import process_pdf, OCRProcessingError
+from pdf_ocr import process_document, OCRProcessingError, is_supported_file
 
 app = Flask(__name__)
 
@@ -65,8 +65,8 @@ class TaskInfo:
             }
 
 
-def process_single_pdf(task_id: str, file_index: int, pdf_path: str, output_dir: str):
-    """处理单个PDF文件"""
+def process_single_file(task_id: str, file_index: int, file_path: str, output_dir: str):
+    """处理单个 PDF 或图片文件"""
     with tasks_lock:
         task = tasks.get(task_id)
         if not task:
@@ -80,7 +80,7 @@ def process_single_pdf(task_id: str, file_index: int, pdf_path: str, output_dir:
         task.files[file_index]["status"] = FileStatus.PROCESSING
 
     try:
-        process_pdf(pdf_path, output_dir)
+        process_document(file_path, output_dir)
         with task.lock:
             task.files[file_index]["status"] = FileStatus.COMPLETED
             task.files[file_index]["output_dir"] = output_dir
@@ -141,8 +141,9 @@ HTML_TEMPLATE = """
   <div id="upload-section">
     <form id="upload-form" enctype="multipart/form-data" class="mb-3">
       <div class="mb-3">
-        <input type="file" class="form-control" id="file-input" name="files" multiple accept=".pdf" required>
-        <small class="text-muted">支持多选PDF文件，最多同时处理5个</small>
+        <input type="file" class="form-control" id="file-input" name="files" multiple
+               accept=".pdf,.png,.jpg,.jpeg,.webp,.gif,.bmp,.tiff,.tif" required>
+        <small class="text-muted">支持 PDF 与图片（PNG/JPG/WebP 等），可多选，最多同时处理 5 个</small>
       </div>
       <button type="submit" class="btn btn-primary" id="start-btn">开始 OCR</button>
     </form>
@@ -349,17 +350,17 @@ def upload():
 
     # 准备文件列表
     files_info = []
-    pdf_files = []
+    pending_files = []
 
     for f in uploaded_files:
         if f.filename == '':
             continue
         filename = secure_filename(f.filename)
-        if not filename.lower().endswith('.pdf'):
+        if not is_supported_file(filename):
             continue
 
-        pdf_path = os.path.join(work_dir, filename)
-        f.save(pdf_path)
+        file_path = os.path.join(work_dir, filename)
+        f.save(file_path)
         out_dir = os.path.join(work_dir, f'ocr_results_{Path(filename).stem}')
 
         files_info.append({
@@ -367,14 +368,14 @@ def upload():
             "status": FileStatus.PENDING,
             "error": None,
             "output_dir": None,
-            "pdf_path": pdf_path,
+            "file_path": file_path,
             "out_dir": out_dir
         })
-        pdf_files.append((pdf_path, out_dir))
+        pending_files.append((file_path, out_dir))
 
     if not files_info:
         shutil.rmtree(work_dir, ignore_errors=True)
-        return jsonify({"error": "没有有效的PDF文件"}), 400
+        return jsonify({"error": "没有有效的 PDF 或图片文件"}), 400
 
     # 创建任务
     task = TaskInfo(task_id, work_dir, files_info)
@@ -382,8 +383,8 @@ def upload():
         tasks[task_id] = task
 
     # 提交并发任务
-    for i, (pdf_path, out_dir) in enumerate(pdf_files):
-        future = executor.submit(process_single_pdf, task_id, i, pdf_path, out_dir)
+    for i, (file_path, out_dir) in enumerate(pending_files):
+        future = executor.submit(process_single_file, task_id, i, file_path, out_dir)
         future.add_done_callback(lambda _, tid=task_id: check_task_completion(tid))
         task.futures.append(future)
 
@@ -453,7 +454,7 @@ def resume(task_id):
                 if f["status"] == FileStatus.CANCELLED:
                     f["status"] = FileStatus.PENDING
                     future = executor.submit(
-                        process_single_pdf, task_id, i, f["pdf_path"], f["out_dir"]
+                        process_single_file, task_id, i, f["file_path"], f["out_dir"]
                     )
                     future.add_done_callback(lambda _, tid=task_id: check_task_completion(tid))
                     task.futures.append(future)

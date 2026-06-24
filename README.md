@@ -1,19 +1,19 @@
-# Mistral OCR PDF 处理工具
+# Mistral OCR 文档处理工具
 
 ![WebUI 预览](http://blog-bucket-20240321.oss-cn-hongkong.aliyuncs.com/blog/x9trs7.png)
 
-这个项目是一个简单但强大的工具，使用 `mistral-ocr-latest` 模型处理 PDF 文件（当前对应 **Mistral OCR 4**）。该工具能够从 PDF 文档中提取文本内容和图像，并将结果保存为 Markdown 格式。
+这个项目使用 `mistral-ocr-latest` 模型处理 **PDF 与图片**（当前对应 **Mistral OCR 4**），提取文本与图像并保存为 Markdown。
 
 ## 功能特点
 
 - 🚀 使用 `mistral-ocr-latest` 模型（当前对应 Mistral OCR 4）
-- 📄 自动提取文本内容并保留原始布局
-- 🖼️ 提取并保存 PDF 中的图像
-- 📝 生成以 PDF 原名命名的 Markdown 文件
+- 📄 支持 PDF 与图片输入（PNG、JPG、WebP、GIF、BMP、TIFF）
+- 🖼️ 提取并保存文档中的图像
+- 📝 生成以原文件名命名的 Markdown 文件
 - 🌏 支持中文等多种语言
 - 🌐 **Web UI 支持**：
   - 实时进度展示
-  - 最多 5 个 PDF 并发处理
+  - 最多 5 个文件并发处理
   - 暂停/继续/取消任务
   - 部分完成文件支持下载
   - 下载文件带时间戳命名
@@ -48,47 +48,33 @@ $Env:MISTRAL_API_KEY="your_actual_api_key"
 
 ### 3. 启动 Web UI（推荐）
 
-通过以下命令启动 Web 界面，支持批量上传和并发处理：
 ```bash
 python webui.py
 ```
 
-浏览器访问 `http://localhost:8080` 即可使用
-
-**功能亮点**：
-- 实时进度条显示处理进度
-- 最多 5 个 PDF 文件并发处理
-- 支持暂停/继续/取消任务
-- 任务中断时可下载已完成的文件
-- 下载的 ZIP 文件自动添加时间戳
+浏览器访问 `http://localhost:8080`，可上传 PDF 或图片批量处理。
 
 ### 4. 命令行模式（可选）
 
-如果你更喜欢命令行操作，可以使用以下命令：
 ```bash
 python pdf_ocr.py your_document.pdf
+python pdf_ocr.py photo.png
+python pdf_ocr.py scan.jpg -o custom_output_folder
 ```
 
-指定自定义输出目录：
-```bash
-python pdf_ocr.py your_document.pdf -o custom_output_folder
-```
-
-如果未提供输出目录，结果将保存在 `ocr_results_[PDF文件名]` 文件夹中。
+未指定输出目录时，结果保存在 `ocr_results_[文件名]` 文件夹中。
 
 ## 输出结果
 
-脚本将根据指定的输出目录（或默认目录 `ocr_results_[PDF文件名]`）创建一个文件夹，其中包含：
+每个文件会生成一个输出目录，包含：
 
-- `[PDF文件名].md`: 包含所有页面内容的 Markdown 文件（以原 PDF 文件名命名）
-- `images/`: 保存 PDF 中提取出的所有图像的文件夹
+- `[文件名].md`：OCR 识别的 Markdown 内容
+- `images/`：提取出的图像（如有）
 
 下载的 ZIP 文件命名格式：`ocr_results_YYYYMMDD_HHMMSS.zip`
 
 ## 注意事项
 
-- 请确保提供的 PDF 文件路径正确且文件可访问
+- 请确保文件路径正确且文件可访问
 - API 密钥需要具有 OCR 功能的访问权限
-- 如果指定的输出目录已存在，脚本仍会尝试在其中创建 `images` 子目录和对应的 `.md` 文件，现有同名文件可能会被覆盖
-
-
+- 若输出目录已存在，同名 `.md` 文件可能会被覆盖

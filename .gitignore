@@ -27,6 +27,14 @@ ocr_web_*/
 
 # 测试文件
 *.pdf
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.bmp
+*.tiff
+*.tif
 
 # IDE
 .idea/
